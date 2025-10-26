@@ -73,9 +73,9 @@ function! s:ScopedFind(regex, start_line, scope)
       let in_comment = 0
     endif
     if line == ''
-      blank_lines += 1
+      let blank_lines += 1
     else
-      blank_lines = 0
+      let blank_lines = 0
     endif
   endwhile
 
