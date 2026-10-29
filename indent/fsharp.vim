@@ -18,7 +18,7 @@ function! FSharpIndent()
    let prev_nb_line = s:Trim(getline(prev_nb_lnum))
    let prev_indent = indent(prev_nb_lnum)
 
-   if prev_nb_line =~ '\s\+\(=\|{\|->\|function\|try\)$'
+   if prev_nb_line =~ '\(^\|\s\)\(=\|{\|->\|then\|else\|do\|try\|finally\|function\)$'
       return prev_indent + s:sw
    endif
    return -1

@@ -3,6 +3,7 @@
 " Last Change:  Sun 19 Oct 2014 11:11:44 PM CEST
 " Maintainer:   Gregor Uhlenheuer <kongo2002@googlemail.com>
 "
+" Note:         Lightly modified by iriri on 29 Oct 2026
 " Note:         This syntax file is a complete rewrite of the original version
 "               of fs.vim from Choy Rim <choy.rim@gmail.com> and a slight
 "               modified version from Thomas Schank <ThomasSchank@gmail.com>
@@ -54,10 +55,10 @@ syn match    fsharpCommentErr "\*)"
 
 
 " enclosing delimiters
-syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="(" matchgroup=fsharpKeyword end=")" contains=ALLBUT,fsharpParenErr,fsharpScript
-syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="{" matchgroup=fsharpKeyword end="}"  contains=ALLBUT,fsharpBraceErr,fsharpScript
-syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="\[" matchgroup=fsharpKeyword end="\]" contains=ALLBUT,fsharpBrackErr,fsharpScript
-syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="\[|" matchgroup=fsharpKeyword end="|\]" contains=ALLBUT,fsharpArrErr,fsharpScript
+syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="(" matchgroup=fsharpKeyword end=")" contains=TOP,fsharpParenErr
+syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="{" matchgroup=fsharpKeyword end="}"  contains=TOP,fsharpBraceErr
+syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="\[" matchgroup=fsharpKeyword end="\]" contains=TOP,fsharpBrackErr
+syn region   fsharpEncl transparent matchgroup=fsharpKeyword start="\[|" matchgroup=fsharpKeyword end="|\]" contains=TOP,fsharpArrErr
 
 
 " comments
@@ -65,7 +66,7 @@ syn keyword  fsharpTodo contained TODO FIXME XXX NOTE
 syn match    fsharpSingleLineComment "//.*$" contains=fsharpTodo,@Spell
 syn region   fsharpDocComment start="///" end="$" contains=fsharpTodo,fsharpXml,@Spell keepend oneline
 syn region   fsharpXml matchgroup=fsharpXmlDoc start="<[^>]\+>" end="</[^>]\+>" contained contains=fsharpXml,@Spell
-syn region   fsharpMultiLineComment start="(\*" end="\*)" contains=fsharpTodo,@Spell
+syn region   fsharpMultiLineComment start="(\*" end="\*)" contains=fsharpTodo,fsharpMultiLineComment,@Spell
 
 
 " keywords
@@ -149,11 +150,13 @@ syn region   fsharpString       start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=fsha
 syn region   fsharpString       start=+"""+ skip=+\\\\\|\\"+ end=+"""+ contains=fsharpFormat
 syn region   fsharpString       start=+@"+ skip=+""+ end=+"+ contains=fsharpFormat
 
-syn match    fsharpFunDef       "->"
-syn match    fsharpRefAssign    ":="
-syn match    fsharpTopStop      ";;"
-syn match    fsharpOperator     "\^"
-syn match    fsharpOperator     "::"
+syn region   fsharpInterpRegion   start="{" end="}" contains=TOP,fsharpFormat contained keepend
+syn match    fsharpInterpEscBrace "{{" contained
+syn match    fsharpInterpEscBrace "}}" contained
+syn region   fsharpInterpString   start=+\$"+ skip=+\\"+ end=+"+
+            \ contains=fsharpFormat,fsharpInterpRegion,fsharpInterpEscBrace
+syn region   fsharpInterpString   start=+\$@"+ skip=+""+ end=+"+
+            \ contains=fsharpFormat,fsharpInterpRegion,fsharpInterpEscBrace
 
 syn match    fsharpLabel        "\<_\>"
 
@@ -167,24 +170,34 @@ syn match    fsharpOperator     "&&&"
 syn match    fsharpOperator     "|||"
 syn match    fsharpOperator     "\.\."
 
-syn match    fsharpKeyChar      "|[^\]]"me=e-1
+syn match    fsharpKeyChar      "|\]\@!"
 syn match    fsharpKeyChar      ";"
 syn match    fsharpKeyChar      "\~"
 syn match    fsharpKeyChar      "?"
-syn match    fsharpKeyChar      "\*"
+syn match    fsharpKeyChar      "\*\%()\)\@!"
 syn match    fsharpKeyChar      "+"
+syn match    fsharpKeyChar      "-"
+syn match    fsharpKeyChar      "/\%(/\)\@!"
+syn match    fsharpKeyChar      "!"
+syn match    fsharpKeyChar      "%"
+syn match    fsharpKeyChar      "@\%x22\@!"
+syn match    fsharpKeyChar      "&"
 syn match    fsharpKeyChar      "="
-syn match    fsharpKeyChar      "|"
 syn match    fsharpKeyChar      "(\*)"
 
 syn match    fsharpOperator     "<-"
+
+syn match    fsharpFunDef       "->"
+syn match    fsharpRefAssign    ":="
+syn match    fsharpTopStop      ";;"
+syn match    fsharpOperator     "\^"
+syn match    fsharpOperator     "::"
 
 syn match    fsharpNumber        "\<\d\+"
 syn match    fsharpNumber        "\<-\=\d\(_\|\d\)*\(u\|u\?[yslLn]\|UL\)\?\>"
 syn match    fsharpNumber        "\<-\=0[x|X]\(\x\|_\)\+\(u\|u\?[yslLn]\|UL\)\?\>"
 syn match    fsharpNumber        "\<-\=0[o|O]\(\o\|_\)\+\(u\|u\?[yslLn]\|UL\)\?\>"
 syn match    fsharpNumber        "\<-\=0[b|B]\([01]\|_\)\+\(u\|u\?[yslLn]\|UL\)\?\>"
-syn match    fsharpFloat         "\<-\=\d\(_\|\d\)*\.\(_\|\d\)*\([eE][-+]\=\d\(_\|\d\)*\)\=\>"
 syn match    fsharpFloat         "\<-\=\d\(_\|\d\)*\.\(_\|\d\)*\([eE][-+]\=\d\(_\|\d\)*\)\=\>"
 syn match    fsharpFloat         "\<\d\+\.\d*"
 
@@ -212,6 +225,7 @@ if version >= 508 || !exists("did_fs_syntax_inits")
     HiLink fsharpParenErr          Error
     HiLink fsharpArrErr            Error
     HiLink fsharpCommentErr        Error
+    HiLink fsharpCharErr           Error
 
     HiLink fsharpSingleLineComment Comment
     HiLink fsharpMultiLineComment  Comment
@@ -245,7 +259,10 @@ if version >= 508 || !exists("did_fs_syntax_inits")
     HiLink fsharpFloat             Float
 
     HiLink fsharpString            String
+    HiLink fsharpInterpString      String
     HiLink fsharpFormat            Special
+    HiLink fsharpInterpEscBrace    Special
+    HiLink fsharpInterpRegion      PreProc
 
     HiLink fsharpModifier          StorageClass
 
